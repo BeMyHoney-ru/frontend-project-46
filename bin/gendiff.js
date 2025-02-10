@@ -40,6 +40,9 @@ program
     console.log('File 2:', data2);
 
     // сравниваем данные в файлах
+
+    const diff = genDiff(data1, data2);
+    console.log(diff);
   });
 
 program.parse(process.argv);
