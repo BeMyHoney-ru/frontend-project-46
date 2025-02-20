@@ -1,9 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 import buildDiff from './compare.js'
+import format from './formatters/index.js'
 import { parse } from './parser.js';
 
-const gendiff = (firstPath, secondPath) => {
+const gendiff = (firstPath, secondPath, formatName = 'stylish') => {
   // // получаем абслютные пути
   const absolutePath1 = path.resolve(process.cwd(), firstPath);
   const absolutePath2 = path.resolve(process.cwd(), secondPath);
@@ -20,7 +21,9 @@ const gendiff = (firstPath, secondPath) => {
   const data1 = parse(content1, format1);
   const data2 = parse(content2, format2);
 
-  const result = buildDiff(data1, data2)
+  const internalTree = buildDiff(data1, data2)
+
+  const result = format(internalTree, formatName)
 
   return result
 }
