@@ -1,3 +1,5 @@
+import chalk from 'chalk';
+
 const indent = (depth, spaces = 4) => ' '.repeat(depth * spaces - 2);
 const formatValue = (value, depth) => {
   if (typeof value !== 'object' || value === null) return String(value);
@@ -10,13 +12,13 @@ const stylish = (tree, depth = 1) => {
   const lines = tree.map(({ key, type, value, oldValue, newValue, children }) => {
     switch (type) {
       case 'added':
-        return `${indent(depth)}+ ${key}: ${formatValue(value, depth)}`;
+        return `${indent(depth)}${chalk.green('+')} ${key}: ${formatValue(value, depth)}`;
       case 'removed':
-        return `${indent(depth)}- ${key}: ${formatValue(value, depth)}`;
+        return `${indent(depth)}${chalk.red('-')} ${key}: ${formatValue(value, depth)}`;
       case 'updated':
         return [
-          `${indent(depth)}- ${key}: ${formatValue(oldValue, depth)}`,
-          `${indent(depth)}+ ${key}: ${formatValue(newValue, depth)}`,
+          `${indent(depth)}${chalk.red('-')} ${key}: ${formatValue(oldValue, depth)}`,
+          `${indent(depth)}${chalk.green('+')} ${key}: ${formatValue(newValue, depth)}`,
         ].join('\n');
       case 'unchanged':
         return `${indent(depth)}  ${key}: ${formatValue(value, depth)}`;
