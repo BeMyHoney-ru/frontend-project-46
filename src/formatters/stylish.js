@@ -1,31 +1,33 @@
-const renderStylish = (node) => {
-  const iter = (node, depth) => {
-    const indent = ' '.repeat(depth * 4);
-    
-    // массиы или нет
-    if (Array.isArray(node)) {
-      return node.map((item) => iter(item, depth + 1)).join('\n');
-    }
-
-    // Если node объект, рекурсивно проходим по ключам и значениям
-    if (typeof node === 'object' && node !== null) {
-      return Object.keys(node).map((key) => {
-        const value = node[key];
-
-        // Если значение - это объект, то углубляемся
-        if (typeof value === 'object' && value !== null) {
-          return `${indent}  ${key}: {\n${iter(value, depth + 1)}\n${indent}  }`;
-        }
-        // Если значение "лист", то возвращаем
-        return `${indent}  ${key}: ${value}`;
-      }).join('\n');
-    }
-
-    // Если значение "лист", то возвращаем
-    return `${indent}${node}`;
-  };
-
-  return `{\n${iter(node, 1)}\n}`;
+const indent = (depth, spaces = 4) => ' '.repeat(depth * spaces - 2);
+const formatValue = (value, depth) => {
+  if (typeof value !== 'object' || value === null) return String(value);
+  const entries = Object.entries(value)
+    .map(([key, val]) => `${indent(depth + 1)}  ${key}: ${formatValue(val, depth + 1)}`);
+  return `{\n${entries.join('\n')}\n${indent(depth)}  }`;
 };
 
-export default renderStylish;
+const stylish = (tree, depth = 1) => {
+  const lines = tree.map(({ key, type, value, oldValue, newValue, children }) => {
+    switch (type) {
+      case 'added':
+        return `${indent(depth)}+ ${key}: ${formatValue(value, depth)}`;
+      case 'removed':
+        return `${indent(depth)}- ${key}: ${formatValue(value, depth)}`;
+      case 'updated':
+        return [
+          `${indent(depth)}- ${key}: ${formatValue(oldValue, depth)}`,
+          `${indent(depth)}+ ${key}: ${formatValue(newValue, depth)}`,
+        ].join('\n');
+      case 'unchanged':
+        return `${indent(depth)}  ${key}: ${formatValue(value, depth)}`;
+      case 'nested':
+        return `${indent(depth)}  ${key}: {\n${stylish(children, depth + 1)}\n${indent(depth)}  }`;
+      default:
+        throw new Error(`Unknown type: ${type}`);
+    }
+  });
+
+  return lines.join('\n');
+};
+
+export default (diff) => `{\n${stylish(diff)}\n}`;

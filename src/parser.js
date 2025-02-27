@@ -9,6 +9,6 @@ export const parse = (content, format) => {
     case 'yml':  
       return yaml.parse(content);
     default:
-      throw new Error(`Unsupported format: ${format}`);
+      throw new Error(`Unsuported format: ${format}`);
   }
 };

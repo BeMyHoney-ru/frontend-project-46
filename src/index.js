@@ -1,31 +1,19 @@
 import fs from 'fs';
 import path from 'path';
-import buildDiff from './compare.js'
-import format from './formatters/index.js'
+import buildDiff from './compare.js';
+import format from './formatters/index.js';
 import { parse } from './parser.js';
 
-const gendiff = (firstPath, secondPath, formatName = 'stylish') => {
-  // // получаем абслютные пути
-  const absolutePath1 = path.resolve(process.cwd(), firstPath);
-  const absolutePath2 = path.resolve(process.cwd(), secondPath);
+const getAbsolutePath = (filepath) => path.resolve(process.cwd(), filepath);
+const getFileContent = (filepath) => fs.readFileSync(getAbsolutePath(filepath), 'utf-8');
+const getFileFormat = (filepath) => path.extname(filepath).slice(1);
 
-  // // чтение содержимого
-  const content1 = fs.readFileSync(absolutePath1, 'utf-8');
-  const content2 = fs.readFileSync(absolutePath2, 'utf-8');
+const gendiff = (filepath1, filepath2, formatName = 'stylish') => {
+  const data1 = parse(getFileContent(filepath1), getFileFormat(filepath1));
+  const data2 = parse(getFileContent(filepath2), getFileFormat(filepath2));
 
-  // // определяем формат файла по расширению
-  const format1 = path.extname(absolutePath1).slice(1)
-  const format2 = path.extname(absolutePath2).slice(1)
-
-  // // парсинг данных
-  const data1 = parse(content1, format1);
-  const data2 = parse(content2, format2);
-
-  const internalTree = buildDiff(data1, data2)
-
-  const result = format(internalTree, formatName)
-
-  return result
-}
+  const diffTree = buildDiff(data1, data2);
+  return format(diffTree, formatName);
+};
 
 export default gendiff;
